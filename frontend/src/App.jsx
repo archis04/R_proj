@@ -1,9 +1,11 @@
 import { useState } from "react";
 import axios from "axios";
+import { motion } from "framer-motion";
 
 function App() {
     const [image, setImage] = useState(null);
     const [price, setPrice] = useState("");
+    const [details, setDetails] = useState(null);
 
     const handleImageChange = (event) => {
         setImage(event.target.files[0]);
@@ -16,10 +18,16 @@ function App() {
         formData.append("file", image);
 
         try {
-            const response = await axios.post("http://localhost:5000/get-price", formData, {
+            const response = await axios.post("http://127.0.0.1:8000/diamond-price", formData, {
                 headers: { "Content-Type": "multipart/form-data" }
             });
-            setPrice(response.data.price);
+            setPrice(response.data.price[0]);
+            setDetails({
+                carat: response.data.carat[0],
+                cut: response.data.cut[0],
+                color: response.data.color[0],
+                clarity: response.data.clarity[0],
+            });
         } catch (error) {
             console.error("Error fetching price", error);
         }
@@ -30,9 +38,21 @@ function App() {
             className="flex flex-col items-center min-h-screen bg-gray-100 p-6 bg-cover bg-center text-white" 
             style={{ backgroundImage: "url(https://res.cloudinary.com/dh6dt6w6z/image/upload/v1743435971/edgar-soto-gb0BZGae1Nk-unsplash_kghudm.jpg)" }}
         >
-            <h1 className="text-4xl font-extrabold bg-black bg-opacity-50 px-6 py-3 rounded-lg mt-6">💎 Diamond Price Predictor 💎</h1>
+            <motion.h1 
+                className="text-4xl font-extrabold bg-black bg-opacity-50 px-6 py-3 rounded-lg mt-6"
+                initial={{ opacity: 0, y: -50 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8 }}
+            >
+                💎 Diamond Price Predictor 💎
+            </motion.h1>
             <div className="flex flex-grow items-center justify-center w-full">
-                <div className="bg-white bg-opacity-80 shadow-2xl rounded-2xl p-8 flex flex-col items-center w-96">
+                <motion.div 
+                    className="bg-white bg-opacity-80 shadow-2xl rounded-2xl p-8 flex flex-col items-center w-96"
+                    initial={{ scale: 0.9, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ duration: 0.5 }}
+                >
                     <label 
                         htmlFor="file-upload" 
                         className="p-3 border border-gray-400 rounded-lg w-full bg-gray-100 text-black text-center cursor-pointer"
@@ -46,14 +66,41 @@ function App() {
                         onChange={handleImageChange} 
                         className="hidden"
                     />
+                    {image && (
+                        <motion.img 
+                            src={URL.createObjectURL(image)} 
+                            alt="Uploaded" 
+                            className="mt-4 w-48 h-48 object-cover rounded-lg shadow-md"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ duration: 0.5 }}
+                        />
+                    )}
                     <button 
                         onClick={handleSubmit} 
                         className="mt-4 px-6 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition shadow-md"
                     >
                         Get Price
                     </button>
-                    {price && <h2 className="mt-4 text-xl font-semibold text-gray-800">Estimated Price: <span className="text-green-700">${price}</span></h2>}
-                </div>
+                    {price && details && (
+                        <motion.div 
+                            className="mt-6 text-gray-800 w-full"
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.5 }}
+                        >
+                            <h2 className="text-xl font-semibold text-center">
+                                Estimated Price: <span className="text-green-700">${price}</span>
+                            </h2>
+                            <div className="mt-4 bg-gray-100 p-4 rounded-lg shadow-md">
+                                <p><strong>Carat:</strong> {details.carat}</p>
+                                <p><strong>Cut:</strong> {details.cut}</p>
+                                <p><strong>Color:</strong> {details.color}</p>
+                                <p><strong>Clarity:</strong> {details.clarity}</p>
+                            </div>
+                        </motion.div>
+                    )}
+                </motion.div>
             </div>
         </div>
     );
