@@ -13,15 +13,21 @@ function App() {
 
     const handleSubmit = async () => {
         if (!image) return alert("Please upload an image");
-
+    
         const formData = new FormData();
         formData.append("file", image);
-
+    
         try {
             const response = await axios.post("http://127.0.0.1:8000/diamond-price", formData, {
                 headers: { "Content-Type": "multipart/form-data" }
             });
-            setPrice(response.data.price[0]);
+            console.log(response.data);
+    
+            const usdPrice = response.data.price[0];
+            const conversionRate = 83; // Example conversion rate
+            const inrPrice = (usdPrice * conversionRate).toFixed(2);
+    
+            setPrice(inrPrice); // Set price in INR
             setDetails({
                 carat: response.data.carat[0],
                 cut: response.data.cut[0],
@@ -31,7 +37,7 @@ function App() {
         } catch (error) {
             console.error("Error fetching price", error);
         }
-    };
+    };    
 
     return (
         <div 
@@ -90,7 +96,7 @@ function App() {
                             transition={{ duration: 0.5 }}
                         >
                             <h2 className="text-xl font-semibold text-center">
-                                Estimated Price: <span className="text-green-700">${price}</span>
+                                Estimated Price: <span className="text-green-700">₹{price}</span>
                             </h2>
                             <div className="mt-4 bg-gray-100 p-4 rounded-lg shadow-md">
                                 <p><strong>Carat:</strong> {details.carat}</p>
